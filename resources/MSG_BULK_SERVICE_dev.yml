@@ -1,0 +1,98 @@
+resources:
+  jobs:
+    MSG_BULK_SERVICE:
+      name: MSG_BULK_SERVICE
+      permissions:
+        - group_name: gcp-aamp-prod-mbr
+          level: CAN_MANAGE
+      email_notifications:
+        on_failure:
+          - dredd37@safeway.com
+#     schedule:
+#       quartz_cron_expression: '44 37 8 * * ?'
+#       timezone_id: Europe/Amsterdam
+      max_concurrent_runs: 5
+      tasks:
+        - task_key: AAMP_MSG_BATCH
+          notebook_task:
+            notebook_path: ../Notebooks/MASTER.py
+            base_parameters:
+              ENV: DEV
+            source: WORKSPACE
+          job_cluster_key: big-static-cluster
+          libraries:
+            - pypi:
+                package: google-auth==2.11.0
+            - pypi:
+                package: azure-keyvault-secrets==4.7.0
+            - pypi:
+                package: black>=23.7.0
+            - pypi:
+                package: jsonnet>=0.20.0
+            - pypi:
+                package: isort>=5.12.0
+            - pypi:
+                package: toml>=0.10.2
+            - whl: dbfs:/FileStore/absplatform/libs/connection-helpers/connection_helpers-0.0.7-py3-none-any.whl
+            - whl: dbfs:/FileStore/absplatform/libs/aamp_feature_validation/aamp_feature_validation-0.1.8-py3-none-any.whl
+            - whl: dbfs:/FileStore/absplatform/libs/platform-helpers/platform_helpers-0.0.14-py3-none-any.whl
+            - pypi:
+                package: pylint>=2.17.5
+            - pypi:
+                package: pytest>=7.4.0
+            - pypi:
+                package: azure_identity==1.15.0
+            - pypi:
+                package: google-cloud-compute==1.5.1
+            - pypi:
+                package: google_cloud_bigquery==3.14.1
+            - pypi:
+                package: mlflow
+            - pypi:
+                package: pyyaml
+            - maven:
+                coordinates: com.albertsons.aapn:aapn-experiment-spring-sdk:rel-1.0-240819-56
+                repo: https://artifactory.albertsons.com/artifactory/AlbertsonsRelease
+            - maven:
+                coordinates: com.fasterxml.jackson.core:jackson-databind:2.15.3
+          max_retries: 1
+          min_retry_interval_millis: 0
+      job_clusters:
+        - job_cluster_key: big-static-cluster
+          new_cluster:
+            spark_version: 14.3.x-cpu-ml-scala2.12
+            spark_conf:
+              spark.hadoop.fs.gs.auth.service.account.private.key.id: "{{secrets/aamp-wmpz-prod-sa-01-scp/private-key-id}}"
+              spark.hadoop.fs.gs.auth.service.account.private.key: "{{secrets/aamp-wmpz-prod-sa-01-scp/private-key}}"
+              spark.hadoop.google.cloud.auth.service.account.enable: "true"
+              spark.hadoop.datanucleus.autoCreateTables: "true"
+              spark.hadoop.datanucleus.autoCreateSchema: "true"
+              spark.hadoop.javax.jdo.option.ConnectionDriverName: org.apache.derby.jdbc.EmbeddedDriver
+              spark.hadoop.fs.gs.project.id: "{{secrets/aamp-wmpz-prod-sa-01-scp/project-id}}"
+              spark.hadoop.javax.jdo.option.ConnectionPassword: hivepass
+              spark.hadoop.fs.gs.auth.service.account.email: "{{secrets/aamp-wmpz-prod-sa-01-scp/client-email}}"
+              spark.hadoop.javax.jdo.option.ConnectionURL: jdbc:derby:memory:myInMemDB;create=true
+              spark.hadoop.javax.jdo.option.ConnectionUserName: hiveuser
+              credentials: "{{secrets/aamp-wmpz-prod-sa-01-scp/credential}}"
+              spark.hadoop.datanucleus.fixedDatastore: "false"
+            gcp_attributes:
+              use_preemptible_executors: false
+            node_type_id: n1-standard-32
+            driver_node_type_id: n1-standard-96
+            custom_tags:
+              app_code: AAMP
+              project_name: MSG_BULK_SERVICE
+              owner: Dhansekar_Reddy
+              x-databricks-nextgen-cluster: "true"
+              portfolio_name: digital_personalization
+            spark_env_vars:
+              PYSPARK_PYTHON: /databricks/python3/bin/python3
+              ENV: DEV
+              JNAME: zulu17-ca-amd64
+            enable_elastic_disk: true
+            policy_id: 001214EA649E1014
+            data_security_mode: NONE
+            runtime_engine: STANDARD
+            autoscale:
+              min_workers: 1
+              max_workers: 4
