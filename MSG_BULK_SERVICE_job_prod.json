@@ -1,0 +1,65 @@
+{
+    "name": "MSG_BULK_SERVICE",
+    "email_notifications": {
+        "on_failure": [
+            "dredd37@safeway.com"
+        ],
+        "no_alert_for_skipped_runs": true
+    },
+    "webhook_notifications": {},
+    "timeout_seconds": 0,
+    "custom_tags": {
+        "project_name": "ml_engineering",
+        "app_code": "AAMP",
+        "owner": "Dhansekar Reddy",
+        "portfolio_name": "digital_personalization"
+    },
+    "max_concurrent_runs": 1,
+    "job_clusters": [
+          {
+            "job_cluster_key": "big-static-cluster",
+            "new_cluster": {
+              "spark_version": "9.1.x-cpu-ml-scala2.12",
+              "spark_conf": {
+              },
+              "node_type_id": "Standard_D64s_v3",
+              "driver_node_type_id": "Standard_D64s_v3",
+              "autoscale": {
+                "min_workers": 1,
+                "max_workers": 2
+              },
+              "enable_elastic_disk": true,
+              "runtime_engine": "STANDARD",
+              "azure_attributes": {
+                "first_on_demand": 1,
+                "availability": "ON_DEMAND_AZURE",
+                "spot_bid_max_price": -1
+              },
+              "policy_id": "D06205EB37000835",
+              "spark_env_vars": {"ENV": "PRD"},
+              "custom_tags": {
+                "app_code": "AAMP",
+                "project_name": "MSG_BULK_SERVICE",
+                "owner": "Dhansekar Reddy",
+                "portfolio_name": "digital_personalization"
+              }
+            }
+          }
+        ],
+    "tasks": [
+        {
+            "task_key": "AAMP_MSG_BATCH",
+            "notebook_task": {
+                "notebook_path": "/Users/4e272cf9-29d8-4734-b035-b9ad464388e8/aamp-msg-batch/MSG_BULK_SERVICE",
+                "base_parameters": {
+                    "ENV": "PRD"
+                },
+                "source": "WORKSPACE"
+            },
+            "job_cluster_key": "big-static-cluster",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        }
+    ],
+    "format": "MULTI_TASK"
+}
